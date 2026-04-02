@@ -6,40 +6,90 @@ if(!isset($_SESSION['user'])) {
     header("Location: login.php");
     exit();
 }
+
+$user = $_SESSION['user'];
 ?>
-<?php include 'db.php'; ?>
 
 <!DOCTYPE html>
 <html>
 <head>
     <title>Create Survey</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(-45deg, #4facfe, #00f2fe, #667eea, #764ba2);
+            background-size: 400% 400%;
+            animation: gradientBG 10s ease infinite;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 40px;
+            background: white;
+        }
+
+        .container-box {
+            max-width: 900px;
+            margin: 40px auto;
+        }
+
+        .card {
+            border-radius: 15px;
+        }
+
+        .question-card {
+            background: #f9f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 
-<body class="bg-light">
+<body>
 
-<div class="container mt-5">
-    <div class="card p-4 shadow">
-
-        <h3>Create Survey</h3>
-
-        <form action="save_survey.php" method="POST" enctype="multipart/form-data">
-
-            <!-- Creator -->
-            <input type="text" name="created_by" class="form-control mb-3" placeholder="Your Name / Roll No" required>
-
-            <input type="text" name="title" class="form-control mb-3" placeholder="Survey Title" required>
-
-            <div id="questions"></div>
-
-            <button type="button" class="btn btn-secondary mb-3" onclick="addQuestion()">➕ Add Question</button>
-
-            <br>
-
-            <button class="btn btn-primary">Save Survey</button>
-
-        </form>
+<!-- NAVBAR -->
+<nav>
+    <div>📊 SurveyPro</div>
+    <div>
+        Welcome <?php echo $user; ?> |
+        <a href="logout.php">Logout</a>
     </div>
+</nav>
+
+<div class="container-box">
+
+<div class="card shadow p-4">
+
+<h3 class="mb-3">➕ Create Survey</h3>
+
+<form action="save_survey.php" method="POST" enctype="multipart/form-data">
+
+<input type="text" name="title" class="form-control mb-3" placeholder="Survey Title" required>
+
+<input type="hidden" name="created_by" value="<?php echo $user; ?>">
+
+<div id="questions"></div>
+
+<button type="button" class="btn btn-secondary mb-3" onclick="addQuestion()">➕ Add Question</button>
+
+<br>
+
+<button class="btn btn-primary w-100">Save Survey</button>
+
+</form>
+
+</div>
 </div>
 
 <script>
@@ -49,14 +99,14 @@ function addQuestion() {
     qCount++;
 
     let html = `
-    <div class="card p-3 mb-3" id="qBox${qCount}">
+    <div class="question-card" id="qBox${qCount}">
 
         <div class="d-flex justify-content-between">
             <strong>Question ${qCount}</strong>
             <button type="button" class="btn btn-danger btn-sm" onclick="deleteQuestion(${qCount})">❌</button>
         </div>
 
-        <input type="text" name="questions[${qCount}]" class="form-control mb-2" placeholder="Question" required>
+        <input type="text" name="questions[${qCount}]" class="form-control mb-2" placeholder="Enter question" required>
 
         <select name="types[${qCount}]" class="form-control mb-2" onchange="changeType(${qCount}, this.value)">
             <option value="radio">Radio</option>
