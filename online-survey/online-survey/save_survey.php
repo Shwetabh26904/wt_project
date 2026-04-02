@@ -2,45 +2,58 @@
 include 'db.php';
 session_start();
 
-if($_SESSION['role'] != 'admin'){
-    die("Access denied");
+if(!isset($_SESSION['user'])){
+    header("Location: login.php");
+    exit();
 }
 
 $title = $_POST['title'];
 $user = $_SESSION['user'];
-$org_id = $_SESSION['org_id'];
 
-$conn->query("INSERT INTO surveys(title,created_by,org_id)
-VALUES('$title','$user','$org_id')");
+// ✅ Insert survey
+$conn->query("INSERT INTO surveys (title, created_by) VALUES ('$title', '$user')");
+$survey_id = $conn->insert_id;
 
-$sid = $conn->insert_id;
 
-foreach($_POST['questions'] as $i=>$q){
+// ✅ Loop through questions
+foreach ($_POST['questions'] as $qIndex => $question) {
 
-$type = $_POST['types'][$i];
+    $type = $_POST['types'][$qIndex];
 
-$imagePath = "";
+    // 🖼 IMAGE UPLOAD
+    $imagePath = "";
 
-if(!empty($_FILES['images']['name'][$i])){
-    $name = time().$_FILES['images']['name'][$i];
-    move_uploaded_file($_FILES['images']['tmp_name'][$i],"uploads/".$name);
-    $imagePath = "uploads/".$name;
+    if(isset($_FILES['images']['name'][$qIndex]) && $_FILES['images']['name'][$qIndex] != "") {
+
+        $imageName = time() . "_" . basename($_FILES['images']['name'][$qIndex]);
+
+        $targetPath = "uploads/" . $imageName;
+
+        if(move_uploaded_file($_FILES['images']['tmp_name'][$qIndex], $targetPath)) {
+            $imagePath = $targetPath;
+        }
+    }
+
+    // ✅ Insert question
+    $conn->query("INSERT INTO questions (survey_id, question, type, image) 
+                  VALUES ('$survey_id', '$question', '$type', '$imagePath')");
+
+    $question_id = $conn->insert_id;
+
+    // ✅ Insert options
+    if(isset($_POST['options'][$qIndex])) {
+
+        foreach ($_POST['options'][$qIndex] as $option) {
+
+            if(!empty(trim($option))) {
+
+                $conn->query("INSERT INTO options (question_id, option_text) 
+                              VALUES ('$question_id', '$option')");
+            }
+        }
+    }
 }
 
-$conn->query("INSERT INTO questions(survey_id,question,type,image)
-VALUES($sid,'$q','$type','$imagePath')");
-
-$qid = $conn->insert_id;
-
-if(isset($_POST['options'][$i])){
-foreach($_POST['options'][$i] as $o){
-if($o){
-$conn->query("INSERT INTO options(question_id,option_text)
-VALUES($qid,'$o')");
-}
-}
-}
-}
-
-header("Location:index.php");
+header("Location: index.php");
+exit();
 ?>
