@@ -6,119 +6,135 @@ if(!isset($_SESSION['user'])) {
     header("Location: login.php");
     exit();
 }
+
+$user = $_SESSION['user'];
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard</title>
+    <title>Survey Dashboard</title>
 
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
-        body { background: #f4f6fb; }
+        body {
+            background: linear-gradient(135deg, #e0eafc, #cfdef3);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* NAVBAR */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 40px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        nav a {
+            text-decoration: none;
+        }
+
+        /* MAIN CONTAINER */
         .dashboard {
             max-width: 900px;
-            margin: 40px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
+            margin: 60px auto;
+            padding: 10px;
         }
+
+        /* GRID */
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 25px;
         }
+
+        /* CARD */
         .box {
-            border: 1px solid #eee;
-            padding: 20px;
-            border-radius: 12px;
+            background: white;
+            padding: 40px 20px;
+            border-radius: 18px;
             text-align: center;
+            text-decoration: none;
+            color: #333;
+
+            box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+            transition: 0.3s ease;
         }
-        .survey-item {
+
+        /* HOVER */
+        .box:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+        }
+
+        /* ICON */
+        .icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        /* TITLE */
+        .box h5 {
+            font-weight: 600;
             margin-top: 10px;
-            border-top: 1px solid #eee;
-            padding-top: 10px;
+        }
+
+        /* COLORS */
+        .take { color: #4facfe; }
+        .result { color: #28a745; }
+        .create { color: #ff9800; }
+        .delete { color: #dc3545; }
+
+        @media(max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 
 <body>
 
-<div class="container mt-3 d-flex justify-content-between">
-    <h4>📊 Survey Dashboard</h4>
-    <div>
-        Welcome, <?php echo $_SESSION['user']; ?> |
-        <a href="logout.php">Logout</a>
-    </div>
-</div>
+<!-- NAVBAR -->
+<nav>
+    <div><strong>📊 SurveyPro</strong></div>
 
+    <div>
+        Welcome, <strong><?php echo $user; ?></strong> |
+        <a href="logout.php" class="text-danger">Logout</a>
+    </div>
+</nav>
+
+<!-- DASHBOARD -->
 <div class="dashboard">
 
-<div class="grid">
+    <div class="grid">
 
-<!-- TAKE SURVEY -->
-<div class="box">
-    <h5>Take Survey</h5>
+        <a href="take_survey.php" class="box">
+            <div class="icon take">📋</div>
+            <h5>Take Survey</h5>
+        </a>
 
-    <?php
-    $result = $conn->query("SELECT * FROM surveys");
+        <a href="view_results.php" class="box">
+            <div class="icon result">📊</div>
+            <h5>View Results</h5>
+        </a>
 
-    while($row = $result->fetch_assoc()) {
-        echo "
-        <div class='survey-item'>
-            ".$row['title']."<br>
-            <a href='survey.php?id=".$row['id']."' class='btn btn-primary btn-sm'>Start</a>
-        </div>";
-    }
-    ?>
-</div>
+        <a href="create_survey.php" class="box">
+            <div class="icon create">➕</div>
+            <h5>Create Survey</h5>
+        </a>
 
-<!-- RESULTS -->
-<div class="box">
-    <h5>Results</h5>
+        <a href="delete_page.php" class="box">
+            <div class="icon delete">🗑</div>
+            <h5>Delete Survey</h5>
+        </a>
 
-    <?php
-    $result = $conn->query("SELECT * FROM surveys");
+    </div>
 
-    while($row = $result->fetch_assoc()) {
-        echo "
-        <div class='survey-item'>
-            ".$row['title']."<br>
-            <a href='result.php?id=".$row['id']."' class='btn btn-success btn-sm'>View</a>
-        </div>";
-    }
-    ?>
-</div>
-
-<!-- CREATE -->
-<div class="box">
-    <h5>Create Survey</h5>
-    <a href="create_survey.php" class="btn btn-warning">Create</a>
-</div>
-
-<!-- DELETE -->
-<div class="box">
-    <h5>Delete Your Surveys</h5>
-
-    <?php
-    $user = $_SESSION['user'];
-    $result = $conn->query("SELECT * FROM surveys WHERE created_by='$user'");
-
-    while($row = $result->fetch_assoc()) {
-        echo "
-        <div class='survey-item'>
-            ".$row['title']."
-            <form method='POST' action='delete_survey.php'>
-                <input type='hidden' name='survey_id' value='".$row['id']."'>
-                <button class='btn btn-danger btn-sm mt-1'>Delete</button>
-            </form>
-        </div>";
-    }
-    ?>
-</div>
-
-</div>
 </div>
 
 </body>
